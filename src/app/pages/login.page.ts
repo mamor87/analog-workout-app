@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 import {
   HIDE_COMMAND_ICON_BUTTON,
   InputComponent,
@@ -10,7 +16,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import { AbstractControl, ValidationErrors } from '@angular/forms';
+import { Router } from '@angular/router';
+import { LoginService } from '../services/login.service';
 
 @Component({
   selector: 'login-component',
@@ -24,17 +31,16 @@ import { AbstractControl, ValidationErrors } from '@angular/forms';
     LoginLayoutComponent,
     InputComponent,
   ],
+  providers: [LoginService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<!-- prettier-ignore -->
     <login-layout>
     <mat-card appearance="outlined">
       <mat-card-content>
-        {{form.login.value}}
         <ui-input
           id="login"
           label="Anmeldung"
-          [(value)]="form.login.value"
-          [validator]="form.login.validator" />
+          [(value)]="form.login.value" />
         <ui-input
           id="password"
           label="Passwort"
@@ -43,23 +49,21 @@ import { AbstractControl, ValidationErrors } from '@angular/forms';
           [iconsEnd]="passwordCommands()"
         />
         <button mat-button (click)="login()">Anmelden</button>
+        @if (loginError) {
+          <mat-error>{{loginError}}</mat-error>
+        }
       </mat-card-content>
     </mat-card>
   </login-layout>`,
 })
 export default class LoginComponent {
+  private readonly changeDetection = inject(ChangeDetectorRef);
+  private readonly router = inject(Router);
+  private readonly loginService = inject(LoginService);
+  loginError = '';
   form = {
     login: {
       value: '',
-      validator: (control: AbstractControl): ValidationErrors | null => {
-        if (control.value === 'Markus') {
-          console.info('invalid', control);
-          return {
-            login: 'Markus ist nicht erlaubt!',
-          };
-        }
-        return null;
-      },
     },
     password: {
       value: '',
@@ -70,7 +74,16 @@ export default class LoginComponent {
     { name: HIDE_COMMAND_ICON_BUTTON, isButton: true },
   ]);
 
-  login() {
-    console.info('login with: ', this.form);
+  async login() {
+    const loginError = await this.loginService.login(
+      this.form.login.value,
+      this.form.password.value
+    );
+    if (!loginError) {
+      this.router.navigateByUrl('/');
+      return;
+    }
+    this.loginError = loginError;
+    this.changeDetection.markForCheck();
   }
 }

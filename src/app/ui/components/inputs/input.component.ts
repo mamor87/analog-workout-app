@@ -14,7 +14,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { CommonModule } from '@angular/common';
-import { FormControl, ValidatorFn } from '@angular/forms';
+import { FormControl, ReactiveFormsModule, ValidatorFn } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
 export const HIDE_COMMAND_ICON_BUTTON = 'SHOW_HIDE';
@@ -30,6 +30,7 @@ export interface InputIcon {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
+    ReactiveFormsModule,
     MatIconModule,
     MatButtonModule,
     MatFormFieldModule,
@@ -50,7 +51,7 @@ export interface InputIcon {
       [type]="hideInput ? 'password' : 'text'"
     />
     <span matPrefix>
-      @if (iconsStart?.length) {
+      @if (iconsStart.length) {
         @for (icon of iconsBefore; track icon.name) {
           @if (icon.isButton) {
             <button mat-icon-button (click)="clickOnIcon(icon)">
@@ -63,7 +64,7 @@ export interface InputIcon {
       }
     </span>
     <span matSuffix>
-      @if (iconsEnd?.length) {
+      @if (iconsEnd.length) {
         @for (icon of iconsAfter; track icon.name) {
           @if (icon.isButton) {
             <button mat-icon-button (click)="clickOnIcon(icon)">
@@ -90,7 +91,7 @@ export class InputComponent implements OnInit, OnDestroy {
 
   @Input() visibleIcon = 'visibility';
   @Input() invisibleIcon = 'visibility_off';
-  @Input() id = crypto.randomUUID();
+  @Input() id = crypto.randomUUID().toString();
   @Input() label = '';
   @Input() hint = '';
   @Input() validator: ValidatorFn | null = null;

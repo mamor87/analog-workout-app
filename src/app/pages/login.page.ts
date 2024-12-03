@@ -18,6 +18,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { Router } from '@angular/router';
 import { LoginService } from '../services/login.service';
+import { TranslationService } from '../ui/services/translation.service';
+import { TranslatePipe } from '../ui/pipes/translate.pipe';
 
 @Component({
   selector: 'login-component',
@@ -30,8 +32,9 @@ import { LoginService } from '../services/login.service';
     MatInputModule,
     LoginLayoutComponent,
     InputComponent,
+    TranslatePipe,
   ],
-  providers: [LoginService],
+  providers: [TranslationService, LoginService],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<!-- prettier-ignore -->
     <login-layout>
@@ -39,16 +42,16 @@ import { LoginService } from '../services/login.service';
       <mat-card-content>
         <ui-input
           id="login"
-          label="Anmeldung"
+          [label]="'LOGIN' | translate"
           [(value)]="form.login.value" />
         <ui-input
           id="password"
-          label="Passwort"
+          [label]="'PASSWORD' | translate"
           [(value)]="form.password.value"
           [hideInput]="passwordHidden()"
           [iconsEnd]="passwordCommands()"
         />
-        <button mat-button (click)="login()">Anmelden</button>
+        <button mat-button (click)="login()">{{'DO_LOGIN' | translate}}</button>
         @if (loginError) {
           <mat-error>{{loginError}}</mat-error>
         }
@@ -60,6 +63,8 @@ export default class LoginComponent {
   private readonly changeDetection = inject(ChangeDetectorRef);
   private readonly router = inject(Router);
   private readonly loginService = inject(LoginService);
+  private readonly translationService = inject(TranslationService);
+
   loginError = '';
   form = {
     login: {
@@ -83,7 +88,7 @@ export default class LoginComponent {
       this.router.navigateByUrl('/');
       return;
     }
-    this.loginError = loginError;
+    this.loginError = this.translationService.get(loginError);
     this.changeDetection.markForCheck();
   }
 }

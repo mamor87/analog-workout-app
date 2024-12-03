@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
       u.password === cryptoJS.SHA512(clearPasswordInput).toString()
   );
   if (!user) {
-    return '"Benutzer nicht gefunden oder Passwort nicht korrekt"';
+    return '"ERROR_LOGIN_FAIL"';
   }
   const token = jwt.sign({ login: body.login }, JWT_SECRET, {
     expiresIn: '24h',
